@@ -2,12 +2,16 @@ package com.satish.resumebuilderapi.service;
 
 import com.satish.resumebuilderapi.document.User;
 import com.satish.resumebuilderapi.dto.AuthResponse;
+import com.satish.resumebuilderapi.dto.LoginRequest;
 import com.satish.resumebuilderapi.dto.RegisterRequest;
 import com.satish.resumebuilderapi.exception.ResourceExistsException;
 import com.satish.resumebuilderapi.repository.UserRepository;
+import com.satish.resumebuilderapi.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +24,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Value("${app.base.url:http://localhost:8080}")
     private String appBaseUrl;
@@ -83,7 +89,7 @@ public class AuthService {
         return User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .profileImage(request.getProfileImageUrl())
                 .subscriptionPlan("Basic")
                 .emailVerified(false)
@@ -106,5 +112,22 @@ public class AuthService {
         user.setVerificationExpires(null);
 
         userRepository.save(user);
+    }
+
+    public AuthResponse login(LoginRequest request){
+        User existingUser = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), existingUser.getPassword())){
+            throw new UsernameNotFoundException("Invalid email or password");
+        }
+        if (!existingUser.isEmailVerified()){
+            throw new RuntimeException("Please verify your email before logging in.");
+        }
+        String token = jwtUtil.generateToken(existingUser.getId());
+
+        AuthResponse response = toResponse(existingUser);
+        response.setToken(token);
+        return response;
     }
 }

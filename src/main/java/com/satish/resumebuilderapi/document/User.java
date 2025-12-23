@@ -29,7 +29,5 @@ public class User {
 
     @CreatedDate
     private LocalDateTime createdAt;
-
-
     private LocalDateTime updateAt;
 }

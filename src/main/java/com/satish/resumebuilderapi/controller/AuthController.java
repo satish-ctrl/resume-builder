@@ -1,6 +1,7 @@
 package com.satish.resumebuilderapi.controller;
 
 import com.satish.resumebuilderapi.dto.AuthResponse;
+import com.satish.resumebuilderapi.dto.LoginRequest;
 import com.satish.resumebuilderapi.dto.RegisterRequest;
 import com.satish.resumebuilderapi.service.AuthService;
 import com.satish.resumebuilderapi.service.FileUploadService;
@@ -48,4 +49,11 @@ public class AuthController {
         Map<String, String> response = fileUploadService.uploadSingleImage(file);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping(LOGIN)
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
 }
