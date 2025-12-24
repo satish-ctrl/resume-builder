@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -129,5 +130,31 @@ public class AuthService {
         AuthResponse response = toResponse(existingUser);
         response.setToken(token);
         return response;
+    }
+
+    public void resendVerification(String email) {
+//        step 1: fetch the user account by email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+//        step 2: check the email is verified
+        if (user.isEmailVerified()){
+            throw new RuntimeException("Email is already verified");
+        }
+
+//        step 3: set the new verification token and expires time
+        user.setVerificationToken(UUID.randomUUID().toString());
+        user.setVerificationExpires(LocalDateTime.now().plusHours(24));
+
+//        step 4: update the user
+        userRepository.save(user);
+
+//        step 5: resend the verification email
+        sendVerificationEmail(user);
+    }
+
+    public AuthResponse getProfile(Object principalObject) {
+        User existingUser = (User) principalObject;
+        return toResponse(existingUser);
     }
 }

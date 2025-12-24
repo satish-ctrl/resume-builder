@@ -1,21 +1,23 @@
 package com.satish.resumebuilderapi.controller;
 
+
 import com.satish.resumebuilderapi.dto.AuthResponse;
 import com.satish.resumebuilderapi.dto.LoginRequest;
 import com.satish.resumebuilderapi.dto.RegisterRequest;
 import com.satish.resumebuilderapi.service.AuthService;
 import com.satish.resumebuilderapi.service.FileUploadService;
-import com.satish.resumebuilderapi.util.AppConstants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.satish.resumebuilderapi.util.AppConstants.*;
 
@@ -56,4 +58,32 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping(RESEND_VERIFICATION)
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String , String> body){
+//        step 1: get the email from request
+        String email =  body.get("email");
+
+//        step 2: add the validations
+        if (Objects.isNull(email)){
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+//        step 3: call the service method to resend the verification link
+        authService.resendVerification(email);
+
+//        step 4: return response
+        return ResponseEntity.ok(Map.of("success", true, "message", "Verification email send"));
+    }
+
+    @GetMapping(PROFILE)
+    public ResponseEntity<?> getProfile(Authentication authentication){
+//        step 1: get the principal object
+        Object principalObject =  authentication.getPrincipal();
+
+//        step 2: call the service method
+        AuthResponse currentProfile = authService.getProfile(principalObject);
+
+//        step 3:return the response
+        return ResponseEntity.ok(currentProfile);
+    }
 }
