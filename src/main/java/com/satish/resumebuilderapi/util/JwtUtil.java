@@ -36,8 +36,9 @@ public class JwtUtil {
     }
 
     public String getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -46,8 +47,9 @@ public class JwtUtil {
 
     public boolean validateToken(String token){
         try{
-            Jwts.parser()
+            Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token);
             return true;
         }catch (JwtException | IllegalArgumentException e){
@@ -57,13 +59,14 @@ public class JwtUtil {
 
     public boolean isTokenExpired(String token){
         try{
-            Claims claims = Jwts.parser()
+            Claims claims = Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token)
                     .getBody();
             return claims.getExpiration().before(new Date());
         }catch (JwtException | IllegalArgumentException e){
-            return  false;
+            return true;
         }
     }
 }

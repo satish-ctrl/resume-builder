@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String userId = null;
 
-        if(authHeader != null && authHeader.startsWith("Bearer")){
+        if(authHeader != null && authHeader.startsWith("Bearer ")){
             token = authHeader.substring(7);
 
             try {
@@ -54,9 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 }
             }catch (Exception e){
-                log.error("Exception occured while validating the token");
+                log.error("Exception occurred while validating the token");
             }
         }
         filterChain.doFilter(request, response);
+        }
     }
-}
