@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 userId = jwtUtil.getUserIdFromToken(token);
             }catch (Exception e){
-                log.error("Token is not valid/available");
+                log.error("Token is not valid/available: {}", e.getMessage());
             }
         }
 
@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 }
             }catch (Exception e){
-                log.error("Exception occurred while validating the token");
+                log.error("Exception occurred while validating the token: {}", e.getMessage());
             }
         }
         filterChain.doFilter(request, response);
